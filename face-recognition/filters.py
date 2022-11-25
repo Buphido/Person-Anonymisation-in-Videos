@@ -4,9 +4,9 @@ import math
 
 def filters(rgb, locs, m):
     def greyscale():
-        for (x, Y, X, y) in locs:
-            for i in range(x, X):
-                for j in range(y, Y):
+        for (y, X, Y, x) in locs:
+            for j in range(x, X):
+                for i in range(y, Y):
                     grey = rgb[i, j, 0] / 3. + rgb[i, j, 1] / 3. + rgb[i, j, 2] / 3
                     rgb[i, j, 0] = grey
                     rgb[i, j, 1] = grey
@@ -16,18 +16,18 @@ def filters(rgb, locs, m):
     def spreadGreyscale():
         mn = 255
         mx = 0
-        for (x, Y, X, y) in locs:
-            for i in range(x, X):
-                for j in range(y, Y):
+        for (y, X, Y, x) in locs:
+            for j in range(x, X):
+                for i in range(y, Y):
                     grey = rgb[i, j, 0] / 3. + rgb[i, j, 1] / 3. + rgb[i, j, 2] / 3
                     mx = max(grey, mx)
                     mn = min(grey, mn)
                     rgb[i, j, 0] = grey
                     rgb[i, j, 1] = grey
                     rgb[i, j, 2] = grey
-        for (x, Y, X, y) in locs:
-            for i in range(x, X):
-                for j in range(y, Y):
+        for (y, X, Y, x) in locs:
+            for j in range(x, X):
+                for i in range(y, Y):
                     spread = (rgb[i, j, 0] - mn) / (mx - mn) * 255
                     rgb[i, j, 0] = spread
                     rgb[i, j, 1] = spread
@@ -35,15 +35,15 @@ def filters(rgb, locs, m):
         return rgb
 
     def weightedGreyscale():
-        for (x, Y, X, y) in locs:
-            box = cv.cvtColor(cv.cvtColor(rgb[x:X, y:Y], cv.COLOR_RGB2GRAY), cv.COLOR_GRAY2RGB)
-            rgb[x:X, y:Y] = box
+        for (y, X, Y, x) in locs:
+            box = cv.cvtColor(cv.cvtColor(rgb[y:Y, x:X], cv.COLOR_RGB2GRAY), cv.COLOR_GRAY2RGB)
+            rgb[y:Y, x.X] = box
         return rgb
 
     def negate(img):
-        for (x, Y, X, y) in locs:
-            for i in range(x, X):
-                for j in range(y, Y):
+        for (y, X, Y, x) in locs:
+            for j in range(x, X):
+                for i in range(y, Y):
                     img[i, j, 0] = 255 - img[i, j, 0]
                     img[i, j, 1] = 255 - img[i, j, 1]
                     img[i, j, 2] = 255 - img[i, j, 2]
@@ -56,35 +56,34 @@ def filters(rgb, locs, m):
         return cv.cvtColor(negate(cv.cvtColor(rgb, cv.COLOR_RGB2HSV)), cv.COLOR_HSV2RGB)
 
     def canny():
-        for (x, Y, X, y) in locs:
-            box = cv.cvtColor(cv.Canny(rgb[x:X, y:Y], 0, 100), cv.COLOR_GRAY2RGB)
-            rgb[x:X, y:Y] = box
+        for (y, X, Y, x) in locs:
+            box = cv.cvtColor(cv.Canny(rgb[y:Y, x:X], 25, 50), cv.COLOR_GRAY2RGB)
+            rgb[y:Y, x:X] = box
         return rgb
 
     def blur():
-        for (x, Y, X, y) in locs:
+        for (y, X, Y, x) in locs:
             dim = 3
             dim = math.ceil(pow((X-x) * (Y-y) / dim/dim, .5))
-            rgb[x:X, y:Y] = cv.blur(rgb[x:X, y:Y], (dim, dim))
+            rgb[y:Y, x:X] = cv.blur(rgb[y:Y, x:X], (dim, dim))
         return rgb
 
     def pixel():
-        for (x, Y, X, y) in locs:
-            dim = 14
+        for (y, X, Y, x) in locs:
+            dim = 10
             dim = math.ceil(pow((X-x) * (Y-y) / dim/dim, .5))
-            i = 0
-            while x + i*dim < X:
-                j = 0
-                while y + j*dim < Y:
-                    box = rgb[x + i*dim: min(x + (i+1)*dim, X-1), y + j*dim: min(y + (j+1)*dim, Y-1)]
-                    (width, height, _) = box.shape
-                    if width <= 0 or height <= 0 :
-                        break;
+            for j in range(math.ceil((X-x)/dim)):
+                for i in range(math.ceil((Y-y)/dim)):
+                    box = rgb[y + i*dim: min(y + (i+1)*dim, Y), x + j*dim: min(x + (j+1)*dim, X)]
                     box = cv.blur(box, (2*dim, 2*dim))
-                    rgb[x + i*dim: min(x + (i+1)*dim, X-1), y + j*dim: min(y + (j+1)*dim, Y-1)] = box
-                    #print("completed", i*math.ceil((Y-y)/dim)+j+1, "/", math.ceil((X-x)/dim)*math.ceil((Y-y)/dim))
-                    j += 1
-                i += 1
+                    rgb[y + i*dim: min(y + (i+1)*dim, Y), x + j*dim: min(x + (j+1)*dim, X)] = box
+        return rgb
+
+    def downscale():
+        for (y, X, Y, x) in locs:
+            dim = 2
+            box = cv.resize(rgb[y:Y, x:X], None, fx= 1/dim, fy= 1/dim, interpolation = cv.INTER_AREA)
+            rgb[y:Y, x:X] = cv.resize(box, (X-x, Y-y), interpolation = cv.INTER_CUBIC)
         return rgb
 
     return {filters.greyscale: greyscale,
@@ -94,7 +93,8 @@ def filters(rgb, locs, m):
             filters.negative: negative,
             filters.canny: canny,
             filters.blur: blur,
-            filters.pixel: pixel}.get(m)()
+            filters.pixel: pixel,
+            filters.downscale: downscale}.get(m)()
 
 
 filters.greyscale, \
@@ -104,5 +104,6 @@ filters.greyscale, \
     filters.negative, \
     filters.canny, \
     filters.blur, \
-    filters.pixel \
-    = tuple(range(8))
+    filters.pixel, \
+    filters.downscale \
+    = tuple(range(9))
