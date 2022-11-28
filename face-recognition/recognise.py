@@ -35,5 +35,5 @@ def recognise(rgb, locs):
             names.append(name)
 
     # do loop over the recognized faces
-    return zip(locs, names)
+    return list(zip(locs, names))
 
