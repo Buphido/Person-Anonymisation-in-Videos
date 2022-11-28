@@ -32,7 +32,7 @@ if __name__ == '__main__':
     data = pickle.loads(open('face_enc', "rb").read())
 
     # Find path to the image/video and pass it here
-    path = 0
+    path = 'yalefaces/subject07/centerlight'
     cap = cv.VideoCapture(path)
     key = -1
     while key != 27 :
