@@ -81,7 +81,7 @@ def filters(rgb, locs, m):
 
     def downscale():
         for (y, X, Y, x) in locs:
-            dim = 2
+            dim = 11
             box = cv.resize(rgb[y:Y, x:X], None, fx= 1/dim, fy= 1/dim, interpolation = cv.INTER_AREA)
             rgb[y:Y, x:X] = cv.resize(box, (X-x, Y-y), interpolation = cv.INTER_CUBIC)
         return rgb

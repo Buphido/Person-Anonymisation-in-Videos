@@ -20,13 +20,13 @@ def recognise(rgb, locs):
         # check to see if we have found a match
         if True in matches:
             # Find positions at which we get True and store them
-            matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+            matchedIdxs = [id for (id, b) in enumerate(matches) if b]
             count = {}
             # loop over the matched indexes and maintain a count for
             # each recognized face
-            for i in matchedIdxs:
+            for id in matchedIdxs:
                 # Check the names at respective indexes we stored in matchedIdxs
-                name = data["names"][i]
+                name = data["names"][id]
                 # increase count for the name we got
                 count[name] = count.get(name, 0) + 1
             # set name which has highest count
