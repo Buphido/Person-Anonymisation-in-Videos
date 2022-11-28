@@ -24,7 +24,18 @@ def colour():
     return out
 
 
+def effectiveness(opt, out):
+    comp = Criteria(opt.detectable == out.detectable, opt.recognisable == out.recognisable)
+    return (int(comp.detectable) + int(comp.recognisable))/2
+
+
+class Criteria:
+    def __init__(self, detectable, recognisable):
+        self.detectable = detectable
+        self.recognisable = recognisable
+
 if __name__ == '__main__':
+    source = 'yalefaces'
     # extract facial data from data set by relative path, if none given previously trained model is taken
     extract(None)
     # to find path of xml file containing haarCascade file
@@ -35,8 +46,12 @@ if __name__ == '__main__':
     data = pickle.loads(open('face_enc', "rb").read())
 
     # Find path to the image/video and pass it here
-    path = 'yalefaces/subject03/centerlight'
+    subject = 'subject05'
+    path = source + '/' + subject + '/centerlight'
     cap = cv.VideoCapture(path)
+
+    detectable = Criteria(True, False)
+
     key = -1
     while key != 27:
         ret, image = cap.read()  # cv.imread('./archive/subject01/biden-trump.jpg')
@@ -47,15 +62,18 @@ if __name__ == '__main__':
 
         # the facial embeddings for face in input
         blackLocs = face_recognition.face_locations(rgb, model="cnn", number_of_times_to_upsample=2)
-
-        rgb = filters(rgb, blackLocs, filters.greyscale)
+        rgb = filters(rgb, blackLocs, filters.downscale)
         locs = face_recognition.face_locations(rgb, model="cnn", number_of_times_to_upsample=0)
         result = cv.cvtColor(rgb, cv.COLOR_RGB2BGR)
+        recognised = recognise(rgb, locs)
+        #test = list(recognised)
+        out = Criteria(len(locs) == 1, len(recognised) == 1 and recognised[0][1] == subject)
+        print("\b\b\b" + str(effectiveness(detectable, out)), end = '')
         for (y, X, Y, x) in blackLocs:
             cv.rectangle(result, (x, y), (X, Y), (0, 0, 0), 2)
         for (y, X, Y, x) in locs:
             cv.rectangle(result, (x, y), (X, Y), (0, 0, 255), 2)
-        for ((y, X, Y, x), name) in recognise(rgb, locs):
+        for ((y, X, Y, x), name) in recognised:
             # rescale the face coordinates
             # draw the predicted face name on the image
             cv.rectangle(result, (x, y), (X, Y), (255, 0, 0), 2)

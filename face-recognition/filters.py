@@ -57,7 +57,7 @@ def filters(rgb, locs, m):
 
     def canny():
         for (y, X, Y, x) in locs:
-            box = cv.cvtColor(cv.Canny(rgb[y:Y, x:X], 25, 50), cv.COLOR_GRAY2RGB)
+            box = cv.cvtColor(cv.Canny(rgb[y:Y, x:X], 25, 150), cv.COLOR_GRAY2RGB)
             rgb[y:Y, x:X] = box
         return rgb
 
@@ -81,7 +81,7 @@ def filters(rgb, locs, m):
 
     def downscale():
         for (y, X, Y, x) in locs:
-            dim = 11
+            dim = 12
             box = cv.resize(rgb[y:Y, x:X], None, fx= 1/dim, fy= 1/dim, interpolation = cv.INTER_AREA)
             rgb[y:Y, x:X] = cv.resize(box, (X-x, Y-y), interpolation = cv.INTER_CUBIC)
         return rgb
