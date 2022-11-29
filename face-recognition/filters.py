@@ -1,5 +1,5 @@
 import cv2 as cv
-import math
+from math import ceil
 
 
 def filters(rgb, locs, m):
@@ -64,16 +64,16 @@ def filters(rgb, locs, m):
     def blur():
         for (y, X, Y, x) in locs:
             dim = 3
-            dim = math.ceil(pow((X-x) * (Y-y) / dim/dim, .5))
+            dim = ceil(pow((X-x) * (Y-y) / dim/dim, .5))
             rgb[y:Y, x:X] = cv.blur(rgb[y:Y, x:X], (dim, dim))
         return rgb
 
     def pixel():
         for (y, X, Y, x) in locs:
             dim = 10
-            dim = math.ceil(pow((X-x) * (Y-y) / dim/dim, .5))
-            for j in range(math.ceil((X-x)/dim)):
-                for i in range(math.ceil((Y-y)/dim)):
+            dim = ceil(pow((X-x) * (Y-y) / dim/dim, .5))
+            for j in range(ceil((X-x)/dim)):
+                for i in range(ceil((Y-y)/dim)):
                     box = rgb[y + i*dim: min(y + (i+1)*dim, Y), x + j*dim: min(x + (j+1)*dim, X)]
                     box = cv.blur(box, (2*dim, 2*dim))
                     rgb[y + i*dim: min(y + (i+1)*dim, Y), x + j*dim: min(x + (j+1)*dim, X)] = box

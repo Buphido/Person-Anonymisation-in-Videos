@@ -1,11 +1,10 @@
-import cv2 as cv
-import pickle
 import face_recognition
+from pickle import loads
 
 
 def recognise(rgb, locs):
-    data = pickle.loads(open('face_enc', "rb").read())
-    result = cv.cvtColor(rgb, cv.COLOR_RGB2BGR)
+   # load the known faces and embeddings saved in last file
+    data = loads(open('face_enc', "rb").read())
 
     encodings = face_recognition.face_encodings(rgb, known_face_locations=locs)
     names = []

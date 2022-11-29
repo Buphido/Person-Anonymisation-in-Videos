@@ -1,10 +1,10 @@
-from imutils import paths  # imutils includes opencv functions
 import face_recognition
-import pickle
 import cv2 as cv
-import os
+from imutils import paths  # imutils includes opencv functions
+from pickle import dumps
+from os import walk
 
-from progress import progress
+from progress import Progress
 
 
 def extract(source):
@@ -16,21 +16,22 @@ def extract(source):
     kEncodings = []
     kNames = []
 
-    i = n = 0
+    ndir = 0
+    prog = Progress('Extraction:', None, None)
     # loop over the image paths
-    for (root, dirs, files) in os.walk('yalefaces'):
-        if n == 0:
-            n = len(dirs) - 1
-        if "subject" not in root:
+    for (root, dirs, files) in walk('yalefaces'):
+        if ndir == 0:
+            ndir = len(dirs) - 1
+        if 'subject' not in root:
             continue
         # extract the person name from the image path
-        name = root.split(os.path.sep)[-1]
-        j = 0
-        m = len(files) - 1
+        name = root.split('/')[-1]
+        if prog.n == 0:
+            prog.initialise(ndir*(len(files) - 1))
         for file in files:
-            if ".DS_Store" == file:
+            if '.DS_Store' == file:
                 continue
-            cap = cv.VideoCapture(root + os.path.sep + file)
+            cap = cv.VideoCapture(root + '/' + file)
             while True:
                 # load the input image and convert it from BGR
                 ret, image = cap.read()
@@ -47,13 +48,11 @@ def extract(source):
                     kNames.append(name)
 
                     # save emcodings along with their names in dictionary data
-                    data = {"encodings": kEncodings, "names": kNames}
+                    data = {'encodings': kEncodings, 'names': kNames}
                     # use pickle to save data into a file for later use
-                    f = open("face_enc", "wb")
-                    f.write(pickle.dumps(data))  # to open file in write mode
+                    f = open('face_enc', 'wb')
+                    f.write(dumps(data))  # to open file in write mode
                     f.close()  # to close file
-                j += 1
-                progress("Extraction:", i*m + j, n*m, 100)
-        i += 1
-    print()
+                prog.update()
+    prog.quit()
     return
