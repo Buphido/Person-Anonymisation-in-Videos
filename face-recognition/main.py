@@ -5,6 +5,7 @@ from face_recognition import face_locations
 from extract import extract
 from recognise import recognise
 from filters import filters
+from train import train
 
 
 def effectiveness(opt, out):
@@ -20,7 +21,7 @@ class Criteria:
 if __name__ == '__main__':
     source = 'yalefaces'
     # extract facial data from data set by relative path, if none given previously trained model is taken
-    extract(source)
+    extract(None)
 
     # Find path to the image/video and pass it here
     subject = 'subject05'
@@ -29,6 +30,7 @@ if __name__ == '__main__':
 
     detectable = Criteria(True, False)
 
+    filter = filters.DOWNSCALE
     key = -1
     while key != 27:
         ret, image = cap.read()  # cv.imread('./archive/subject01/biden-trump.jpg')
@@ -38,14 +40,14 @@ if __name__ == '__main__':
         rgb = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
         # the facial embeddings for face in input
-        blackLocs = face_locations(rgb, model='cnn', number_of_times_to_upsample=2)
-        rgb = filters(rgb, blackLocs, filters.downscale)
+        blackLocs = face_locations(rgb, model='cnn', number_of_times_to_upsample=0)
+        train(filter)
+        rgb = filters(rgb, blackLocs, filter)
         locs = face_locations(rgb, model='cnn', number_of_times_to_upsample=0)
         result = cv.cvtColor(rgb, cv.COLOR_RGB2BGR)
         recognised = recognise(rgb, locs)
         #test = list(recognised)
         out = Criteria(len(locs) == 1, len(recognised) == 1 and recognised[0][1] == subject)
-        print('\b\b\b' + str(effectiveness(detectable, out)), end = '')
         for (y, X, Y, x) in blackLocs:
             cv.rectangle(result, (x, y), (X, Y), (0, 0, 0), 2)
         for (y, X, Y, x) in locs:
@@ -57,6 +59,7 @@ if __name__ == '__main__':
             cv.rectangle(result, (x, y), (X, Y), colour, 2)
             # print(name, colour())
             cv.putText(result, name, (x, y), cv.FONT_HERSHEY_SIMPLEX, 0.75, colour, 2)
+            cv.putText(result, 'Eff.: ' + str(effectiveness(detectable, out)), (x, Y+17), cv.FONT_HERSHEY_SIMPLEX, 0.75, colour, 2)
 
         cv.imshow('Frame', result)
         key = cv.waitKey(1000)

@@ -47,12 +47,12 @@ def extract(source):
                     kEncodings.append(encoding)
                     kNames.append(name)
 
-                    # save emcodings along with their names in dictionary data
-                    data = {'encodings': kEncodings, 'names': kNames}
-                    # use pickle to save data into a file for later use
-                    f = open('face_enc', 'wb')
-                    f.write(dumps(data))  # to open file in write mode
-                    f.close()  # to close file
+                # save emcodings along with their names in dictionary data
+                data = {'encodings': kEncodings, 'names': kNames}
+                # use pickle to save data into a file for later use
+                f = open('face_enc', 'wb')
+                f.write(dumps(data))  # to open file in write mode
+                f.close()  # to close file
                 prog.update()
     prog.quit()
     return
