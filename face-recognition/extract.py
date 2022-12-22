@@ -13,9 +13,7 @@ def extract(source):
     # get paths of each file in folder named Images
     # Images here that contains data(folders of various people)
     imagePath = list(paths.list_images(source))
-    kEncodings = []
-    kNames = []
-
+    kNames = {}
     ndir = 0
     prog = Progress('Extraction:', None, None)
     # loop over the image paths
@@ -26,33 +24,35 @@ def extract(source):
             continue
         # extract the person name from the image path
         name = root.split('/')[-1]
-        if prog.n == 0:
-            prog.initialise(ndir*(len(files) - 1))
+        prog.initialise(ndir*(len(files) - 1))
+        kTypes = {}
         for file in files:
             if '.DS_Store' == file:
                 continue
-            cap = cv.VideoCapture(root + '/' + file)
-            while True:
-                # load the input image and convert it from BGR
-                ret, image = cap.read()
-                if not ret:
-                    break
-                rgb = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            _, image = cv.VideoCapture(root + '/' + file).read()
+            rgb = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            locs = face_recognition.face_locations(rgb, model='cnn')
+            # compute the facial embedding for any face
+            encodings = face_recognition.face_encodings(rgb, locs)
+            # loop over the encodings
+            kEncodings = []
+            kLocs = []
+            for i in range(len(encodings)):
+                kLocs.append(locs[i])
+                kEncodings.append(encodings[i])
+            kTypes[file] = {'locs': kLocs, 'encodings': kEncodings}
+            prog.update()
+        kNames[name] = kTypes
 
-                boxes = face_recognition.face_locations(rgb, model='hog')
-                # compute the facial embedding for the any face
-                encodings = face_recognition.face_encodings(rgb, boxes)
-                # loop over the encodings
-                for encoding in encodings:
-                    kEncodings.append(encoding)
-                    kNames.append(name)
-
-                # save emcodings along with their names in dictionary data
-                data = {'encodings': kEncodings, 'names': kNames}
-                # use pickle to save data into a file for later use
-                f = open('face_enc', 'wb')
-                f.write(dumps(data))  # to open file in write mode
-                f.close()  # to close file
-                prog.update()
+    # save emcodings along with their names in dictionary data
+    #data = {'encodings': kEncodings, 'subjects': kNames, 'types': kTypes}
+    # use pickle to save data into a file for later use
+    f = open('face_enc', 'wb')
+    f.write(dumps(kNames))  # to open file in write mode
+    f.close()  # to close file
     prog.quit()
     return
+
+
+if __name__ == '__main__':
+    extract('yalefaces')

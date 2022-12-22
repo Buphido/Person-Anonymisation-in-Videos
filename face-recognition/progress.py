@@ -32,13 +32,12 @@ class Progress:
     def update(self):
         if self.i > self.n or self.i < 0 :
             return
+        if not self.init:
+            self.initialise(None)
+        percent = floor(self.i / self.n * 100)
+        for j in range(len(str(percent) + '% []') + self.steps):
+            print('\b', end='')
         self.i += 1
-        if self.i > 1 or self.init:
-            percent = floor((self.i - 1) / self.n * 100)
-            for j in range(len(str(percent) + '% []') + self.steps):
-                print('\b', end='')
-        else:
-            print(self.desc, end='')
         percent = floor(self.i / self.n * 100)
         print(str(percent) + '% [', end='')
         for step in range(self.steps):
