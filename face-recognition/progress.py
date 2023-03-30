@@ -2,26 +2,17 @@ from math import floor
 
 
 class Progress:
-    def __init__(self, desc, n, steps):
-        if desc is not None:
-            self.desc = desc + ' '
-        else:
-            self.desc = ''
+    def __init__(self, desc, n=0, steps=100):
+        self.desc = desc + ' '
         self.i = 0
-        if n is not None:
-            self.n = n
-        else:
-            self.n = 0
-        if steps is not None:
-            self.steps = steps
-        else:
-            self.steps = 100
+        self.n = n
+        self.steps = steps
         self.init = False
 
-    def initialise(self, n):
+    def initialise(self, n=-1):
         if self.init:
             return
-        if n is not None:
+        if n > -1:
             self.n = n
         self.init = True
         print(self.desc + '0% [', end='')
@@ -33,7 +24,7 @@ class Progress:
         if self.i > self.n or self.i < 0 :
             return
         if not self.init:
-            self.initialise(None)
+            self.initialise()
         percent = floor(self.i / self.n * 100)
         for j in range(len(str(percent) + '% []') + self.steps):
             print('\b', end='')

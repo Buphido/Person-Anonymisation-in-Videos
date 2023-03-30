@@ -1,3 +1,2 @@
-/ReID/Query/**
-/ReID/Gallery/**
-/ReID/reid.onnx
+face-recognition/custom_box.mp4
+face-recognition/mask_rcnn_coco.h5

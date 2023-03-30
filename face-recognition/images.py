@@ -13,13 +13,16 @@ class Images:
         SURPRISED, \
         WINK = range(11)
 
-    def __init__(self, subject, type):
+    def __init__(self, subject=None, type=None, rgb=None):
         self.subject = subject
         self.type = type
-        self.rgb = cv.cvtColor(cv.VideoCapture(self.fp()).read()[1], cv.COLOR_BGR2RGB)
+        if rgb is None:
+            self.rgb = cv.cvtColor(cv.VideoCapture(self.fp()).read()[1], cv.COLOR_BGR2RGB)
+        else:
+            self.rgb = rgb
 
     def subjectStr(self):
-        if self.subject < 1 or self.subject > 15:
+        if self.subject is None or self.subject < 1 or self.subject > 15:
             return ''
         return 'subject' + ('0' if (self.subject < 10) else '') + str(self.subject)
 

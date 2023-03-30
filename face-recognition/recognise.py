@@ -38,7 +38,8 @@ def recognise(image, locs):
                 # increase count for the name we got
                 count[name] = count.get(name, 0) + 1
             # set name which has highest count
-            name = max(count, key=count.get)
+            if len(count) > 0:
+                name = max(count, key=count.get)
         # will update the list of names
         names.append(name)
 

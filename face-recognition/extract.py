@@ -15,7 +15,7 @@ def extract(source):
     imagePath = list(paths.list_images(source))
     kNames = {}
     ndir = 0
-    prog = Progress('Extraction:', None, None)
+    prog = Progress('Extraction:')
     # loop over the image paths
     for (root, dirs, files) in walk('yalefaces'):
         if ndir == 0:
@@ -24,7 +24,7 @@ def extract(source):
             continue
         # extract the person name from the image path
         name = root.split('/')[-1]
-        prog.initialise(ndir*(len(files) - 1))
+        prog.initialise(n=ndir*(len(files) - 1))
         kTypes = {}
         for file in files:
             if '.DS_Store' == file:
